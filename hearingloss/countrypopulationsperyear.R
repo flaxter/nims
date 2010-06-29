@@ -1,0 +1,60 @@
+# return the country's population for a particular age group at a particular year 
+countrypopulationsperyear<- function(country,
+	agepopdata,yearid,agegroups)
+{
+uniquenames<-unique(country)
+N<-length(uniquenames)
+
+femalepop<-mat.or.vec(N,length(agegroups))
+malepop<-mat.or.vec(N,length(agegroups))
+uniquec<-unique(country)
+for(i in 1:N)
+{
+	countryn<-uniquenames[i]
+	# first do females
+	frowind<-which(agepopdata$gbd_country == countryn & 
+		agepopdata$year == yearid 
+		& agepopdata$sex == "Female")
+	# men
+	mrowind<-which(agepopdata$gbd_country == countryn & 
+		agepopdata$year == yearid 
+		& agepopdata$sex == "Male")
+	for(j in 1:(length(agegroups)-1))
+	{
+		# assume age starts at 1
+		agestart<-floor(agegroups[j]/5)+6
+		ageend<-floor((agegroups[j+1]-1)/5)+6
+		# make sure don't exceed end threshold
+		agestart=min(c(agestart,length(agepopdata[1,])))
+		ageend=min(c(ageend,length(agepopdata[1,])))
+		ageinds<-agestart:ageend;
+		if(agegroups[length(agegroups)] > 90)
+		{
+			# assume either have data for men and women or neither
+			# no data for 90 and above
+			if(is.na(agepopdata[frowind,26]))
+			{
+				if(is.na(agepopdata[frowind,24]))
+				{
+					ageinds<-c(ageinds[ageinds < 23],25)
+				} else {
+					ageinds<-c(ageinds[ageinds < 25])
+				}
+			} else {
+				# check if data for 80-85 and 85-90
+				if(is.na(agepopdata[frowind,24]))
+				{ 
+					# just use 80+ data 
+					ageinds<-c(ageinds[ageinds < 23],25)
+				} else {
+					ageinds<-c(ageinds[ageinds < 25],26)
+				}
+			}
+		} # for now assume all are greater than 90
+		femalepop[i,j]<-sum(agepopdata[frowind,ageinds])
+		malepop[i,j]<- sum(agepopdata[mrowind,ageinds])
+	}
+}
+returnvalues<-list(femalepop,malepop)
+return(returnvalues)
+}
