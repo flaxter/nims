@@ -1,0 +1,18 @@
+model {
+for (i in 1:N) {
+	logit(p[i]) <- alpha[country[i]]+(b.age[country[i]])*age[i] + 
+		b.sex*female[i]+b.thresh*thresh1[i] ;
+	countsp[i] ~ dbin(p[i],countsn[i]);
+}
+for (i in 1:Nc)
+{
+	alpha[i] ~ dnorm(0,taucountry);	
+	var[i]<-lambda+b.gdp*countrygdp[i]
+	b.age[i] ~ dexp(var[i]);
+}
+taucountry ~ dunif(0.000001,10000)
+lambda ~ dunif(0.0001,100)
+b.sex ~ dnorm(0,.000001)
+b.thresh ~ dnorm(0,.000001)
+b.gdp ~ dunif(0,1000)
+}
